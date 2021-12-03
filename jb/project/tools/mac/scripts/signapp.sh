@@ -45,7 +45,7 @@ log "$INPUT_FILE extracted and removed"
 
 APP_NAME=$(echo ${INPUT_FILE} | awk -F".tar" '{ print $1 }')
 APPLICATION_PATH="$EXPLODED/$APP_NAME"
-mv $EXPLODED/$BUIDL_NAME $APPLICATION_PATH
+mv $EXPLODED/$BUILD_NAME $APPLICATION_PATH
 
 find "$APPLICATION_PATH/Contents/Home/bin" \
   -maxdepth 1 -type f -name '*.jnilib' -print0 |
