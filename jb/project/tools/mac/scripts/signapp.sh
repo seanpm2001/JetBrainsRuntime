@@ -37,9 +37,9 @@ BUILD_NAME="$(ls "$EXPLODED")"
 #sed -i '' s/BNDL/APPL/ $EXPLODED/$BUILD_NAME/Contents/Info.plist
 rm -f $EXPLODED/$BUILD_NAME/Contents/CodeResources
 rm "$INPUT_FILE"
-if test -d $EXPLODED/$BUILD_NAME/Contents/Home/jmods; then
-  mv $EXPLODED/$BUILD_NAME/Contents/Home/jmods $BACKUP_JMODS
-fi
+#if test -d $EXPLODED/$BUILD_NAME/Contents/Home/jmods; then
+#  mv $EXPLODED/$BUILD_NAME/Contents/Home/jmods $BACKUP_JMODS
+#fi
 
 log "$INPUT_FILE extracted and removed"
 
@@ -126,9 +126,10 @@ log "Zipping $BUILD_NAME to $INPUT_FILE ..."
 (
   #cd "$EXPLODED"
   #ditto -c -k --sequesterRsrc --keepParent "$BUILD_NAME" "../$INPUT_FILE"
-  if test -d $BACKUP_JMODS/jmods; then
-    mv $BACKUP_JMODS/jmods $EXPLODED/$BUILD_NAME/Contents/Home
-  fi
+#  if test -d $BACKUP_JMODS/jmods; then
+#    mv $BACKUP_JMODS/jmods $EXPLODED/$BUILD_NAME/Contents/Home
+#  fi
+  mv $APPLICATION_PATH $EXPLODED/$BUILD_NAME
 
   tar -pczvf $INPUT_FILE --exclude='man' -C $EXPLODED $BUILD_NAME
   log "Finished zipping"
