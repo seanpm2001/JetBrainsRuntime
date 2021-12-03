@@ -11,7 +11,7 @@ EXPLODED=$2.exploded
 BACKUP_JMODS=$2.backup
 USERNAME=$3
 PASSWORD=$4
-JB_DEVELOPER_CERT=$5
+CODESIGN_STRING=$5
 JB_INSTALLER_CERT=$6
 NOTARIZE=$7
 BUNDLE_ID=$8
@@ -82,7 +82,7 @@ limit=3
 set +e
 while [[ $attempt -le $limit ]]; do
   log "Signing (attempt $attempt) $APPLICATION_PATH ..."
-  ./sign.sh "$APPLICATION_PATH" "$APP_NAME" "$BUNDLE_ID" "$JB_DEVELOPER_CERT" "$JB_INSTALLER_CERT"
+  ./sign.sh "$APPLICATION_PATH" "$APP_NAME" "$BUNDLE_ID" "$CODESIGN_STRING" "$JB_INSTALLER_CERT"
   ec=$?
   if [[ $ec -ne 0 ]]; then
     ((attempt += 1))
