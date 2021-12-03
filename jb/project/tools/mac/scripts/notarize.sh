@@ -64,8 +64,6 @@ log "Notarizing $APP_NAME..."
 rm -rf "altool.init.out" "altool.check.out"
 altool-upload "$APP_NAME"
 
-rm -rf "$APP_NAME"
-
 notarization_info="$(grep -e "RequestUUID" "altool.init.out" | grep -oE '([0-9a-f-]{36})')"
 
 if [ -z "$notarization_info" ]; then
