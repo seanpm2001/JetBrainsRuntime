@@ -11,9 +11,10 @@ EXPLODED=$2.exploded
 BACKUP_JMODS=$2.backup
 USERNAME=$3
 PASSWORD=$4
-CODESIGN_STRING=$5
-NOTARIZE=$6
-BUNDLE_ID=$7
+JB_DEVELOPER_CERT=$5
+JB_INSTALLER_CERT=$6
+NOTARIZE=$7
+BUNDLE_ID=$8
 
 cd "$(dirname "$0")"
 
@@ -33,7 +34,7 @@ mkdir "$BACKUP_JMODS"
 log "Unzipping $INPUT_FILE to $EXPLODED ..."
 tar -xzvf "$INPUT_FILE" --directory $EXPLODED
 BUILD_NAME="$(ls "$EXPLODED")"
-sed -i '' s/BNDL/APPL/ $EXPLODED/$BUILD_NAME/Contents/Info.plist
+#sed -i '' s/BNDL/APPL/ $EXPLODED/$BUILD_NAME/Contents/Info.plist
 rm -f $EXPLODED/$BUILD_NAME/Contents/CodeResources
 rm "$INPUT_FILE"
 if test -d $EXPLODED/$BUILD_NAME/Contents/Home/jmods; then
@@ -42,7 +43,9 @@ fi
 
 log "$INPUT_FILE extracted and removed"
 
-APPLICATION_PATH="$EXPLODED/$BUILD_NAME"
+APP_NAME=$(echo ${INPUT_FILE} | awk -F".tar" '{ print $1 }')
+APPLICATION_PATH="$EXPLODED/$APP_NAME"
+mv $EXPLODED/$BUIDL_NAME $APPLICATION_PATH
 
 find "$APPLICATION_PATH/Contents/Home/bin" \
   -maxdepth 1 -type f -name '*.jnilib' -print0 |
@@ -79,7 +82,7 @@ limit=3
 set +e
 while [[ $attempt -le $limit ]]; do
   log "Signing (attempt $attempt) $APPLICATION_PATH ..."
-  ./sign.sh "$APPLICATION_PATH" "$CODESIGN_STRING"
+  ./sign.sh "$APPLICATION_PATH" "$APP_NAME" "$BUNDLE_ID" "$JB_DEVELOPER_CERT" "$JB_INSTALLER_CERT"
   ec=$?
   if [[ $ec -ne 0 ]]; then
     ((attempt += 1))
@@ -92,6 +95,7 @@ while [[ $attempt -le $limit ]]; do
     log "Signing done"
     codesign -v "$APPLICATION_PATH" -vvvvv
     log "Check sign done"
+    spctl -a -v $APPLICATION_PATH
     ((attempt += limit))
   fi
 done
@@ -102,13 +106,12 @@ if [ "$NOTARIZE" = "yes" ]; then
   log "Notarizing..."
   # shellcheck disable=SC1090
   source "$HOME/.notarize_token"
-  APP_NAME=$(echo ${INPUT_FILE} | awk -F"." '{ print $1 }')
   # Since notarization tool uses same file for upload token we have to trick it into using different folders, hence fake root
   # Also it leaves copy of zip file in TMPDIR, so notarize.sh overrides it and uses FAKE_ROOT as location for temp TMPDIR
   FAKE_ROOT="$(pwd)/fake-root"
   mkdir -p "$FAKE_ROOT"
   echo "Notarization will use fake root: $FAKE_ROOT"
-  ./notarize.sh "$APPLICATION_PATH" "$APPLE_USERNAME" "$APPLE_PASSWORD" "$APP_NAME" "$BUNDLE_ID" "$FAKE_ROOT"
+  ./notarize.sh "$APPLICATION_PATH" "$APPLE_USERNAME" "$APPLE_PASSWORD" "$APP_NAME.pkg" "$BUNDLE_ID" "$FAKE_ROOT"
   rm -rf "$FAKE_ROOT"
 
   set +e
@@ -127,7 +130,7 @@ log "Zipping $BUILD_NAME to $INPUT_FILE ..."
     mv $BACKUP_JMODS/jmods $EXPLODED/$BUILD_NAME/Contents/Home
   fi
 
-  tar -pczvf $INPUT_FILE --exclude='*.dSYM' --exclude='man' -C $EXPLODED $BUILD_NAME
+  tar -pczvf $INPUT_FILE --exclude='man' -C $EXPLODED $BUILD_NAME
   log "Finished zipping"
 )
 rm -rf "$EXPLODED"

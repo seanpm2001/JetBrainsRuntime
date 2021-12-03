@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 APP_DIRECTORY=$1
 APPL_USER=$2
@@ -54,17 +54,17 @@ function altool-upload() {
 #immediately exit script with an error if a command fails
 set -euo pipefail
 
-file="$APP_NAME.zip"
+#file="$APP_NAME.zip"
 
-log "Zipping $file..."
-rm -rf "$file"
-ditto -c -k --sequesterRsrc --keepParent "$APP_DIRECTORY" "$file"
+#log "Zipping $file..."
+#rm -rf "$file"
+#ditto -c -k --sequesterRsrc --keepParent "$APP_DIRECTORY" "$file"
 
-log "Notarizing $file..."
+log "Notarizing $APP_NAME..."
 rm -rf "altool.init.out" "altool.check.out"
-altool-upload "$file"
+altool-upload "$APP_NAME"
 
-rm -rf "$file"
+rm -rf "$APP_NAME"
 
 notarization_info="$(grep -e "RequestUUID" "altool.init.out" | grep -oE '([0-9a-f-]{36})')"
 
