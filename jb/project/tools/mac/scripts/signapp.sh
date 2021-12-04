@@ -44,7 +44,7 @@ fi
 log "$INPUT_FILE extracted and removed"
 
 APP_NAME=$(echo ${INPUT_FILE} | awk -F".tar" '{ print $1 }')
-APPLICATION_PATH==$(sed "s/osx-//" <<< "$EXPLODED/$APP_NAME")
+APPLICATION_PATH=$(sed "s/osx-//" <<< "$EXPLODED/$APP_NAME")
 mv $EXPLODED/$BUILD_NAME $APPLICATION_PATH
 
 find "$APPLICATION_PATH/Contents/Home/bin" \
