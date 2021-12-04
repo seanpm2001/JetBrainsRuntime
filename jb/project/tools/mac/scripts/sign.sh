@@ -5,6 +5,7 @@ APP_NAME=$2
 BUNDLE_ID=$3
 JB_DEVELOPER_CERT=$4
 JB_INSTALLER_CERT=$5
+BACKUP_JMODS=$6
 
 if [[ -z "$APPLICATION_PATH" ]] || [[ -z "$JB_DEVELOPER_CERT" ]]; then
   echo "Usage: $0 AppDirectory CertificateID"
