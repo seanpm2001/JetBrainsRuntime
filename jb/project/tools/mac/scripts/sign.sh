@@ -95,6 +95,17 @@ codesign --timestamp \
 
 BUILD_NAME=$(echo $APPLICATION_PATH | awk -F"/" '{ print $2 }')
 
+log "Zipping $BUILD_NAME to $INPUT_FILE ..."
+(
+  if test -d $BACKUP_JMODS/jmods; then
+    mv $BACKUP_JMODS/jmods $APPLICATION_PATH/Contents/Home
+  fi
+  mv $APPLICATION_PATH $EXPLODED/$BUILD_NAME
+
+  tar -pczvf $INPUT_FILE --exclude='man' -C $EXPLODED $BUILD_NAME
+  log "Finished zipping"
+)
+
 log "Creating $APP_NAME.pkg..."
 rm -rf "$APP_NAME.pkg"
 pkgbuild --identifier $BUNDLE_ID --sign "$JB_INSTALLER_CERT" --root $APPLICATION_PATH \
