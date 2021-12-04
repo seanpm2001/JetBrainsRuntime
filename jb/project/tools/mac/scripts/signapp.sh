@@ -127,7 +127,7 @@ log "Zipping $BUILD_NAME to $INPUT_FILE ..."
   #cd "$EXPLODED"
   #ditto -c -k --sequesterRsrc --keepParent "$BUILD_NAME" "../$INPUT_FILE"
   if test -d $BACKUP_JMODS/jmods; then
-    mv $BACKUP_JMODS/jmods $EXPLODED/$BUILD_NAME/Contents/Home
+    mv $BACKUP_JMODS/jmods $APPLICATION_PATH/Contents/Home
   fi
   mv $APPLICATION_PATH $EXPLODED/$BUILD_NAME
 
