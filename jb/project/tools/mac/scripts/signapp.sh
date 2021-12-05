@@ -122,5 +122,17 @@ else
   log "Stapling disabled"
 fi
 
+log "Zipping $BUILD_NAME to $INPUT_FILE ..."
+(
+  #cd "$EXPLODED"
+  #ditto -c -k --sequesterRsrc --keepParent "$BUILD_NAME" "../$INPUT_FILE"
+  if test -d $BACKUP_JMODS/jmods; then
+    mv $BACKUP_JMODS/jmods $APPLICATION_PATH/Contents/Home
+  fi
+  mv $APPLICATION_PATH $EXPLODED/$BUILD_NAME
+
+  tar -pczvf $INPUT_FILE --exclude='man' -C $EXPLODED $BUILD_NAME
+  log "Finished zipping"
+)
 rm -rf "$EXPLODED"
 log "Done"
