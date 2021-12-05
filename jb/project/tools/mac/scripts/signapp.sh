@@ -82,7 +82,7 @@ limit=3
 set +e
 while [[ $attempt -le $limit ]]; do
   log "Signing (attempt $attempt) $APPLICATION_PATH ..."
-  ./sign.sh "$APPLICATION_PATH" "$APP_NAME" "$BUNDLE_ID" "$CODESIGN_STRING" "$JB_INSTALLER_CERT" "$BACKUP_JMODS"
+  ./sign.sh "$APPLICATION_PATH" "$APP_NAME" "$BUNDLE_ID" "$CODESIGN_STRING" "$JB_INSTALLER_CERT"
   ec=$?
   if [[ $ec -ne 0 ]]; then
     ((attempt += 1))
