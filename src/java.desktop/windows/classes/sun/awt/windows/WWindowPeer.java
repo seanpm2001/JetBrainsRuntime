@@ -25,29 +25,15 @@
 
 package sun.awt.windows;
 
-import java.awt.AWTEvent;
-import java.awt.AWTEventMulticaster;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
-import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.SystemColor;
-import java.awt.Window;
+import sun.awt.*;
+import sun.java2d.SunGraphics2D;
+import sun.java2d.pipe.Region;
+import sun.util.logging.PlatformLogger;
+
+import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -55,22 +41,11 @@ import java.awt.image.DataBufferInt;
 import java.awt.peer.WindowPeer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import sun.awt.AWTAccessor;
-import sun.awt.AppContext;
-import sun.awt.DisplayChangedListener;
-import sun.awt.SunToolkit;
-import sun.awt.TimedWindowEvent;
-import sun.awt.Win32GraphicsConfig;
-import sun.awt.Win32GraphicsDevice;
-import sun.awt.Win32GraphicsEnvironment;
-import sun.java2d.pipe.Region;
-
-import sun.java2d.SunGraphics2D;
-import sun.util.logging.PlatformLogger;
+import java.util.Map;
 
 import static sun.java2d.SunGraphicsEnvironment.toUserSpace;
 
@@ -991,31 +966,29 @@ public class WWindowPeer extends WPanelPeer implements WindowPeer,
         return err;
     }
 
-    private volatile List<Rectangle> customDecorHitTestSpots;
-    private volatile int customDecorTitleBarHeight = -1; // 0 can be a legal value when no title bar is expected
-
     // called from client via reflection
+    @Deprecated
     private void setCustomDecorationHitTestSpots(List<Rectangle> hitTestSpots) {
-        this.customDecorHitTestSpots = new CopyOnWriteArrayList<>(hitTestSpots);
+        List<Map.Entry<Shape, Integer>> spots = new ArrayList<>();
+        for (Rectangle spot : hitTestSpots) spots.add(Map.entry(spot, 1));
+        try {
+            Field f = Window.class.getDeclaredField("customDecorHitTestSpots");
+            f.setAccessible(true);
+            f.set(target, spots);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new Error(e);
+        }
     }
 
     // called from client via reflection
+    @Deprecated
     private void setCustomDecorationTitleBarHeight(int height) {
-        if (height >= 0) customDecorTitleBarHeight = height;
-    }
-
-    // called from native
-    private boolean hitTestCustomDecoration(int x, int y) {
-        List<Rectangle> spots = customDecorHitTestSpots;
-        if (spots == null) return false;
-        for (Rectangle spot : spots) {
-            if (spot.contains(x, y)) return true;
+        try {
+            Field f = Window.class.getDeclaredField("customDecorTitleBarHeight");
+            f.setAccessible(true);
+            f.set(target, height);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new Error(e);
         }
-        return false;
-    }
-
-    // called from native
-    private int getCustomDecorationTitleBarHeight() {
-        return customDecorTitleBarHeight;
     }
 }
