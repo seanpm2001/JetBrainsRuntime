@@ -25,15 +25,29 @@
 
 package sun.awt.windows;
 
-import sun.awt.*;
-import sun.java2d.SunGraphics2D;
-import sun.java2d.pipe.Region;
-import sun.util.logging.PlatformLogger;
-
-import java.awt.*;
+import java.awt.AWTEvent;
+import java.awt.AWTEventMulticaster;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.SystemColor;
+import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -46,6 +60,20 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import sun.awt.AWTAccessor;
+import sun.awt.AppContext;
+import sun.awt.DisplayChangedListener;
+import sun.awt.SunToolkit;
+import sun.awt.TimedWindowEvent;
+import sun.awt.Win32GraphicsConfig;
+import sun.awt.Win32GraphicsDevice;
+import sun.awt.Win32GraphicsEnvironment;
+import sun.java2d.pipe.Region;
+
+import sun.java2d.SunGraphics2D;
+import sun.util.logging.PlatformLogger;
 
 import static sun.java2d.SunGraphicsEnvironment.toUserSpace;
 
