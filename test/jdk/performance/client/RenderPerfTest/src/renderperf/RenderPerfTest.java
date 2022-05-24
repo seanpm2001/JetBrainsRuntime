@@ -610,6 +610,7 @@ public class RenderPerfTest {
 
         private double execTime = 0;
         private AtomicInteger markerIdx = new AtomicInteger(0);
+        private int renderedMarkerIdx = -1;
         private AtomicLong markerPaintTime = new AtomicLong(0);
 
         private double fps;
@@ -638,15 +639,19 @@ public class RenderPerfTest {
                         @Override
                         protected void paintComponent(Graphics g) {
                             super.paintComponent(g);
-                            markerPaintTime.set(System.nanoTime());
+                            int idx = markerIdx.get();
+                            if (idx != renderedMarkerIdx) {
+                                markerPaintTime.set(System.nanoTime());
+                            }
 
                             Graphics2D g2d = (Graphics2D) g.create();
                             renderable.setup(g2d);
                             renderable.render(g2d);
                             g2d.setClip(null);
                             g2d.setPaintMode();
-                            g2d.setColor(marker[markerIdx.get()]);
+                            g2d.setColor(marker[idx]);
                             g2d.fillRect(0, 0, BW, BH);
+                            renderedMarkerIdx = idx;
                         }
                     };
 
@@ -682,7 +687,6 @@ public class RenderPerfTest {
                             break;
                         }
                     }
-
                     if (currIdx == markerIdx.get()) {
                         execTime += System.nanoTime() - paintTime;
                         frame++;
