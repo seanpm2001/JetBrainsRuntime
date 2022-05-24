@@ -67,6 +67,10 @@ export TZ
 SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)"
 export SOURCE_DATE_EPOCH
 
+COPYRIGHT_YEAR=""
+BUILD_TIME=""
+TOUCH_TIME=""
+REPRODUCIBLE_TAR_OPTS=""
 case "$OS_NAME" in
     Linux)
         COPYRIGHT_YEAR="$(date --utc --date=@$SOURCE_DATE_EPOCH +%Y)"
