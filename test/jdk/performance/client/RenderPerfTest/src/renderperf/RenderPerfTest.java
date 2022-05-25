@@ -680,14 +680,8 @@ public class RenderPerfTest {
                     Color c = robot.getPixelColor(
                             panel.getTopLevelAncestor().getX() + panel.getTopLevelAncestor().getInsets().left + BW / 2,
                             panel.getTopLevelAncestor().getY() + panel.getTopLevelAncestor().getInsets().top + BW / 2);
-                    int currIdx = -1;
-                    for (int i = 0; i < marker.length; i++) {
-                        if (isAlmostEqual(c, marker[i])) {
-                            currIdx = i;
-                            break;
-                        }
-                    }
-                    if (currIdx == markerIdx.get()) {
+
+                    if (isAlmostEqual(c, marker[markerIdx.get()])) {
                         execTime += System.nanoTime() - paintTime;
                         frame++;
                         paintTime = 0;
