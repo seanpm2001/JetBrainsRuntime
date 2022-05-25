@@ -75,7 +75,7 @@ function create_image_bundle {
     mv release "$IMAGES_DIR"/"$__arch_name"/release
     cp $IMAGES_DIR/jdk/lib/src.zip "$IMAGES_DIR"/"$__arch_name"/lib
     copy_jmods "$__modules" "$__modules_path" "$IMAGES_DIR"/"$__arch_name"/jmods
-    zip_native_debug_symbols $JSDK "${JBSDK}_diz"
+    zip_native_debug_symbols $JSDK "${JBR}_diz"
   fi
 
   # jmod does not preserve file permissions (JDK-8173610)
