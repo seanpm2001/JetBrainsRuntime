@@ -37,9 +37,9 @@ function do_configure {
     --with-toolchain-version=$TOOLCHAIN_VERSION \
     --with-boot-jdk=$BOOT_JDK \
     --disable-ccache \
+    --enable-cds=yes \
     $STATIC_CONF_ARGS \
     $REPRODUCIBLE_BUILD_OPTS \
-    --enable-cds=yes \
     || do_exit $?
 }
 
