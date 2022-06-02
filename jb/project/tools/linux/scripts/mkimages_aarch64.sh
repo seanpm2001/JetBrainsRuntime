@@ -137,7 +137,6 @@ if [ "$bundle_type" == "jcef" ] || [ "$bundle_type" == "fd" ]; then
   jbr_name_postfix="_${bundle_type}"
 else
   jbr_name_postfix=""
-  jbrsdk_name_postfix=""
 fi
 
 # create runtime image bundle
