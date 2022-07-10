@@ -87,6 +87,7 @@
 #define  ROUND(x) ((int) ((x<0) ? (x-0.5) : (x+0.5)))
 #define  FT26Dot6ToDouble(x)  ((x) / ((double) (1<<6)))
 #define  FT26Dot6ToInt(x) (((int)(x)) >> 6)
+#define  FT26Dot6ToIntRound(x) (((int)(x + (1 << 5))) >> 6)
 #define  FT26Dot6ToIntCeil(x) (((int)(x - 1 + (1 << 6))) >> 6)
 #define  IntToFT26Dot6(x) (((FT_Fixed)(x)) << 6)
 #define  DEFAULT_DPI 72
@@ -126,6 +127,12 @@ typedef struct CachedMatch {
 } CachedMatch;
 
 #define NUM_CACHED_VALUES 8
+#endif
+
+// Define these manually when building with old Freetype (before 2.5)
+#if !defined(FT_LOAD_COLOR)
+#define FT_LOAD_COLOR ( 1L << 20 )
+#define FT_PIXEL_MODE_BGRA 7
 #endif
 
 typedef struct {
@@ -1939,17 +1946,17 @@ static jlong
             (float) - (advh * FTFixedToFloat(context->transform.yx));
     } else {
         if (!ftglyph->advance.y) {
-            glyphInfo->advanceX =
-                (float) ROUND(FT26Dot6ToFloat(FT_MulFix(ftglyph->advance.x, manualScale)));
+            glyphInfo->advanceX = FT26Dot6ToIntRound(
+                    FT_MulFix(ftglyph->advance.x, manualScale));
             glyphInfo->advanceY = 0;
         } else if (!ftglyph->advance.x) {
             glyphInfo->advanceX = 0;
-            glyphInfo->advanceY =
-                (float) ROUND(FT26Dot6ToFloat(-FT_MulFix(ftglyph->advance.y, manualScale)));
+            glyphInfo->advanceY = FT26Dot6ToIntRound(
+                    -FT_MulFix(ftglyph->advance.y, manualScale));
         } else {
-            glyphInfo->advanceX = FT26Dot6ToFloat(
+            glyphInfo->advanceX = FT26Dot6ToIntRound(
                     FT_MulFix(ftglyph->advance.x, manualScale));
-            glyphInfo->advanceY = FT26Dot6ToFloat(
+            glyphInfo->advanceY = FT26Dot6ToIntRound(
                     -FT_MulFix(ftglyph->advance.y, manualScale));
         }
     }
