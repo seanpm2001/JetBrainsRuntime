@@ -30,6 +30,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.stream.Stream;
 
 public class OutlineTextRendererEmoji {
     private static final int IMG_WIDTH = 84;
@@ -44,6 +45,8 @@ public class OutlineTextRendererEmoji {
             System.getProperty("os.name").toLowerCase().contains("linux") ? 0.94 : 0.98;
 
     public static void main(String[] args) throws Exception {
+        requireFont("Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji");
+
         BufferedImage small = new BufferedImage(IMG_WIDTH, IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         BufferedImage rescaled = new BufferedImage(IMG_WIDTH, IMG_HEIGHT, BufferedImage.TYPE_INT_RGB);
         BufferedImage big = new BufferedImage(IMG_WIDTH*2, IMG_HEIGHT*2, BufferedImage.TYPE_INT_RGB);
@@ -163,5 +166,18 @@ public class OutlineTextRendererEmoji {
         private static double[] sub(double[] a, double... b) { return apply((i, j) -> i - j, a, b); }
         private static double[] mul(double[] a, double... b) { return apply((i, j) -> i * j, a, b); }
         private static double[] div(double[] a, double... b) { return apply((i, j) -> i / j, a, b); }
+    }
+
+    private static void requireFont(String macOS, String windows, String linux) {
+        String os = System.getProperty("os.name").toLowerCase();
+        String font;
+        if (os.contains("mac")) font = macOS;
+        else if (os.contains("windows")) font = windows;
+        else if (os.contains("linux")) font = linux;
+        else return;
+        String[] fs = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        if (Stream.of(fs).noneMatch(s -> s.equals(font))) {
+            throw new Error("Required font not found: " + font);
+        }
     }
 }
