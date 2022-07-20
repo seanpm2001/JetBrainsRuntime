@@ -32,6 +32,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.stream.Stream;
 
+import static java.awt.RenderingHints.KEY_TEXT_ANTIALIASING;
+import static java.awt.RenderingHints.VALUE_TEXT_ANTIALIAS_ON;
+
 public class OutlineTextRendererEmoji {
     private static final int IMG_WIDTH = 84;
     private static final int IMG_HEIGHT = 84;
@@ -41,8 +44,7 @@ public class OutlineTextRendererEmoji {
     private static final String EMOJI = "\ud83d\udd25"; // Fire
 
     private static final int WINDOW_SIZE = 12; // In pixels
-    private static final double THRESHOLD = // We expect a bit lower score on Linux
-            System.getProperty("os.name").toLowerCase().contains("linux") ? 0.94 : 0.98;
+    private static final double THRESHOLD = 0.98;
 
     public static void main(String[] args) throws Exception {
         requireFont("Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji");
@@ -56,10 +58,11 @@ public class OutlineTextRendererEmoji {
     }
 
     private static void drawEmoji(Image img, int x, int y, int size) {
-        Graphics g = img.getGraphics();
+        Graphics2D g = (Graphics2D) img.getGraphics();
         g.setColor(Color.white);
         g.fillRect(0, 0, img.getWidth(null), img.getHeight(null));
         g.setFont(new Font(Font.DIALOG, Font.PLAIN, size));
+        g.setRenderingHint(KEY_TEXT_ANTIALIASING, VALUE_TEXT_ANTIALIAS_ON);
         g.drawString(EMOJI, x, y);
         g.dispose();
     }
