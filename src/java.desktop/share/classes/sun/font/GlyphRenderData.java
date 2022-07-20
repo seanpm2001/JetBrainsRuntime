@@ -29,10 +29,7 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DirectColorModel;
+import java.awt.image.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -129,7 +126,7 @@ public class GlyphRenderData {
         colorLayers.add(new ColorLayer(new Color(r, g, b, a), outline));
     }
 
-    private static ColorModel colorModel(boolean premultiplied, int bits, int r, int g, int b, int a) {
+    private static DirectColorModel colorModel(boolean premultiplied, int bits, int r, int g, int b, int a) {
         if (Unsafe.getUnsafe().isBigEndian()) {
             r = Integer.reverse(r) >>> (32 - bits);
             g = Integer.reverse(g) >>> (32 - bits);
@@ -139,7 +136,7 @@ public class GlyphRenderData {
         return new DirectColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
                 bits, r, g, b, a, premultiplied, DataBuffer.TYPE_INT);
     }
-    private static final ColorModel[] BITMAP_COLOR_MODELS = {
+    private static final DirectColorModel[] BITMAP_COLOR_MODELS = {
             colorModel(false, 32, // macOS RGBA
                     0x000000ff,
                     0x0000ff00,
@@ -162,13 +159,10 @@ public class GlyphRenderData {
                            int width, int height, int pitch,
                            int colorModel, int[] data) {
         if (bitmaps == null) bitmaps = new ArrayList<>();
-        ColorModel color = BITMAP_COLOR_MODELS[colorModel];
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                image.setRGB(x, y, color.getRGB(data[pitch * y + x]));
-            }
-        }
+        DirectColorModel color = BITMAP_COLOR_MODELS[colorModel];
+        DataBuffer buffer = new DataBufferInt(data, data.length);
+        WritableRaster raster = Raster.createPackedRaster(buffer, width, height, pitch, color.getMasks(), null);
+        BufferedImage image = new BufferedImage(color, raster, color.isAlphaPremultiplied(), null);
         bitmaps.add(new Bitmap(new AffineTransform(m00, m10, m01, m11, m02, m12), image));
     }
 }
