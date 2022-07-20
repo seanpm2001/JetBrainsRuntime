@@ -26,10 +26,12 @@ package sun.font;
 import jdk.internal.misc.Unsafe;
 
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.DirectColorModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,27 +129,28 @@ public class GlyphRenderData {
         colorLayers.add(new ColorLayer(new Color(r, g, b, a), outline));
     }
 
-    private static ColorModel colorModel(int bits, int r, int g, int b, int a) {
+    private static ColorModel colorModel(boolean premultiplied, int bits, int r, int g, int b, int a) {
         if (Unsafe.getUnsafe().isBigEndian()) {
             r = Integer.reverse(r) >>> (32 - bits);
             g = Integer.reverse(g) >>> (32 - bits);
             b = Integer.reverse(b) >>> (32 - bits);
             a = Integer.reverse(a) >>> (32 - bits);
         }
-        return new DirectColorModel(bits, r, g, b, a);
+        return new DirectColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB),
+                bits, r, g, b, a, premultiplied, DataBuffer.TYPE_INT);
     }
     private static final ColorModel[] BITMAP_COLOR_MODELS = {
-            colorModel(32, // macOS RGBA
+            colorModel(false, 32, // macOS RGBA
                     0x000000ff,
                     0x0000ff00,
                     0x00ff0000,
                     0xff000000),
-            colorModel(32, // macOS ARGB
+            colorModel(false, 32, // macOS ARGB
                     0x0000ff00,
                     0x00ff0000,
                     0xff000000,
                     0x000000ff),
-            colorModel(32, // Freetype BGRA
+            colorModel(true, 32, // Freetype BGRA
                     0x00ff0000,
                     0x0000ff00,
                     0x000000ff,
