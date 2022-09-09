@@ -469,7 +469,8 @@ public class RenderPerfTest {
                 if (status == VolatileImage.IMAGE_INCOMPATIBLE) {
                     volImg = config.createCompatibleVolatileImage(dukeImg.getWidth(), dukeImg.getHeight(),
                             Transparency.TRANSLUCENT);
-                } else if (status == VolatileImage.IMAGE_RESTORED) {
+                }
+                if (status != VolatileImage.IMAGE_OK) {
                     Graphics2D g = volImg.createGraphics();
                     g.setComposite(AlphaComposite.Src);
                     g.drawImage(dukeImg, null, null);
