@@ -307,8 +307,8 @@ wl_buffer_release(void * data, struct wl_buffer * wl_buffer)
 {
     /* Sent by the compositor when it's no longer using this buffer */
     WLSurfaceBufferManager *manager = (WLSurfaceBufferManager *) data;
-
     MUTEX_LOCK(manager->showLock);
+    assert(manager->bufferForShow.wlBuffer == wl_buffer);
     assert(manager->bufferForShow.state == WL_BUFFER_LOCKED);
     manager->bufferForShow.state = WL_BUFFER_RELEASED;
     MUTEX_UNLOCK(manager->showLock);
@@ -387,29 +387,24 @@ CopyDamagedArea(WLSurfaceBufferManager * manager, jint x, jint y, jint width, ji
  * notified of what has changed in the buffer.
  */
 static bool
-CopyDamagedAreasToShowBuffer(WLSurfaceBufferManager * manager) {
+CopyDamagedAreasToShowBuffer(WLSurfaceBufferManager * manager)
+{
     ASSERT_SHOW_LOCK_IS_HELD(manager);
     ASSERT_DRAW_LOCK_IS_HELD(manager);
-
     assert(manager->bufferForShow.damageList == NULL);
-
-    const bool needCommit = manager->sizeChanged
-                            || (manager->bufferForDraw.damageList != NULL)
-                            || manager->bufferForShow.state == WL_BUFFER_NEW;
-    if (manager->sizeChanged) {
-        manager->sizeChanged = false;
-        SurfaceBufferAdjust(manager);
-    }
     assert(DrawBufferSizeInBytes(manager) <= ShowBufferSizeInBytes(manager));
 
-    manager->bufferForShow.damageList = manager->bufferForDraw.damageList;
-    manager->bufferForDraw.damageList = NULL;
+    const bool willCommit = (manager->bufferForDraw.damageList != NULL) && manager->wlSurface != NULL;
+    if (willCommit) {
+	    manager->bufferForShow.damageList = manager->bufferForDraw.damageList;
+	    manager->bufferForDraw.damageList = NULL;
 
-    for (DamageList* l = manager->bufferForShow.damageList; l; l = l->next) {
-        CopyDamagedArea(manager, l->x, l->y, l->width, l->height);
+	    for (DamageList* l = manager->bufferForShow.damageList; l; l = l->next) {
+		    CopyDamagedArea(manager, l->x, l->y, l->width, l->height);
+	    }
     }
 
-    return needCommit;
+    return willCommit;
 }
 
 static void
@@ -431,10 +426,15 @@ BufferShowToWayland(WLSurfaceBufferManager * manager)
             RegisterFrameLost("New buffer is available, but Wayland hasn't released the old one yet");
             pthread_mutex_unlock(&manager->drawLock);
         } else {
-            const bool doSend = CopyDamagedAreasToShowBuffer(manager);
+            bool needCommit = false;
+            if (manager->sizeChanged) {
+                manager->sizeChanged = false;
+                SurfaceBufferAdjust(manager);
+                needCommit = true;
+            }
+            needCommit |= CopyDamagedAreasToShowBuffer(manager);
             pthread_mutex_unlock(&manager->drawLock);
-
-            if (doSend) {
+            if (needCommit) {
                 SendToWayland(manager);
             }
         }
@@ -467,6 +467,7 @@ SurfaceBufferCreate(WLSurfaceBufferManager * manager, size_t newSize)
         assert(manager->bufferForShow.size >= newSize);
         assert(manager->bufferForShow.data);
         assert(manager->bufferForShow.wlPool);
+        memset(manager->bufferForShow.data, 0, newSize);
     }
 
     const int stride = manager->width * sizeof(pixel_t);
@@ -498,6 +499,8 @@ SurfaceBufferDestroy(WLSurfaceBufferManager * manager, bool destroyPool)
     //  the surface contents" (source: wayland.xml)
     wl_buffer_destroy(manager->bufferForShow.wlBuffer);
     manager->bufferForShow.wlBuffer = NULL;
+    DamageList_FreeAll(manager->bufferForShow.damageList);
+    manager->bufferForShow.damageList = NULL;
 }
 
 static void

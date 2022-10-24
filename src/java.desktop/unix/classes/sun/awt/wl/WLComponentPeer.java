@@ -326,6 +326,7 @@ public class WLComponentPeer implements ComponentPeer {
                 layout();
 
                 WLToolkit.postEvent(new ComponentEvent(getTarget(), ComponentEvent.COMPONENT_RESIZED));
+                postPaintEvent();
             }
         }
     }

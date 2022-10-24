@@ -94,7 +94,7 @@ JNIEXPORT void JNICALL
 Java_sun_java2d_wl_WLSurfaceData_commitToServer(JNIEnv *env, jobject wsd)
 {
 #ifndef HEADLESS
-    J2dTrace(J2D_TRACE_INFO, "WLSurfaceData_commitToSurface\n");
+    J2dTrace(J2D_TRACE_INFO, "WLSurfaceData_commitToServer\n");
     WLSDOps *wsdo = (WLSDOps*)SurfaceData_GetOps(env, wsd);
     if (wsdo == NULL) {
         return;
@@ -138,6 +138,10 @@ WLSD_Lock(JNIEnv *env,
     priv->lockFlags = lockflags;
     priv->wlBuffer = WLSBM_BufferAcquireForDrawing(wlso->bufferManager);
 
+    J2dTrace4(J2D_TRACE_INFO, "WLSD_Lock() at %d, %d for %dx%d\n",
+              pRasInfo->bounds.x1, pRasInfo->bounds.y1,
+              pRasInfo->bounds.x2 - pRasInfo->bounds.x1,
+              pRasInfo->bounds.y2 - pRasInfo->bounds.y1);
     SurfaceData_IntersectBoundsXYWH(&pRasInfo->bounds,
                                     0,
                                     0,
